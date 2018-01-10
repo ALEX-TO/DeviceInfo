@@ -28,4 +28,5 @@ dependencies {
 
     compile 'com.android.support:design:26.1.0'
     compile 'com.androidadvance:topsnackbar:1.1.1'
+    compile 'com.githang:status-bar-compat:latest.integration'
 }

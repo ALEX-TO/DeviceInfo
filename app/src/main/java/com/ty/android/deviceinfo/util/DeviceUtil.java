@@ -7,6 +7,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -69,11 +70,19 @@ public class DeviceUtil {
 
         imei_imsi[0] = tm.getDeviceId();
 
+        if(tm.getDeviceId() != null) {
+            imei_imsi[0] = tm.getDeviceId();
+        }else {
+            imei_imsi[0] = "未获取到IMEI";
+        }
+
         if(tm.getSubscriberId() != null) {
             imei_imsi[1] = tm.getSubscriberId();
         }else {
             imei_imsi[1] = "未插SIM卡";
         }
+
+        LogUtil.log(imei_imsi[0] + "\n" + imei_imsi[1]);
 
         return imei_imsi;
 
@@ -223,14 +232,6 @@ public class DeviceUtil {
     }
 
     /**
-     * 获取硬件名称
-     * @return
-     */
-    public static String getHardware() {
-        return Build.HARDWARE;
-    }
-
-    /**
      * 获取总内存
      * @return
      */
@@ -308,5 +309,15 @@ public class DeviceUtil {
         }
 
         return permissionContent;
+    }
+
+    public static int getStatusBarHeight(Context context) {
+        int statusBarHeight = 0;
+        Resources res = context.getResources();
+        int resourceId = res.getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            statusBarHeight = res.getDimensionPixelSize(resourceId);
+        }
+        return statusBarHeight;
     }
 }

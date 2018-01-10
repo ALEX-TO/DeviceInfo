@@ -1,25 +1,34 @@
 package com.ty.android.deviceinfo.activity;
 
 import android.Manifest;
+import android.app.ActionBar;
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.githang.statusbar.StatusBarCompat;
 import com.ty.android.deviceinfo.entity.DeviceInfo;
 import com.ty.android.deviceinfo.adapter.DeviceInfoAdapter;
 import com.ty.android.deviceinfo.PermissionListener;
 import com.ty.android.deviceinfo.R;
 import com.ty.android.deviceinfo.util.DeviceUtil;
+import com.ty.android.deviceinfo.util.LogUtil;
 import com.ty.android.deviceinfo.util.SnackBarUtils;
 import com.ty.android.deviceinfo.util.ToastUtil;
 
@@ -38,17 +47,33 @@ public class DeviceInfoActivity extends BaseActivity {
 
     private List<DeviceInfo> deviceInfo = new ArrayList<>();
 
-    private LinearLayout ll_main;
-
+//    private LinearLayout ll_main;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_info);
 
-        ll_main = findViewById(R.id.ll_main);
+        StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.colorPrimary), false);
+
+//        ll_main = findViewById(R.id.ll_main);
+
+        listView = findViewById(R.id.list_view);
 
         permission();
 
+    }
+
+    public static View getActionBarView(final Activity activity) {
+        if (activity instanceof IToolbarHolder)
+            return ((IToolbarHolder) activity).getToolbar();
+        final String packageName = activity instanceof DeviceInfoActivity ? activity.getPackageName() : "android";
+        final int resId = activity.getResources().getIdentifier("action_bar_container", "id", packageName);
+        final View view = activity.findViewById(resId);
+        return view;
+    }
+
+    public interface IToolbarHolder {
+        public android.support.v7.widget.Toolbar getToolbar();
     }
 
     /**
@@ -94,7 +119,7 @@ public class DeviceInfoActivity extends BaseActivity {
                                 .show();
                     }else {
 //                    Toast.makeText(DeviceInfoActivity.this, "被拒绝的权限：" + DeviceUtil.getPermissionContent(permission), Toast.LENGTH_SHORT).show();
-                        SnackBarUtils.showTopSnackBar(ll_main, "被拒绝的权限：" + DeviceUtil.getPermissionContent(permission));
+                        SnackBarUtils.showTopSnackBar(getActionBarView(getParent()), "被拒绝的权限：" + DeviceUtil.getPermissionContent(permission));
                     }
                 }
 
@@ -107,7 +132,7 @@ public class DeviceInfoActivity extends BaseActivity {
      * 加载ListView
      */
     public void setUpListView(boolean hasGetPermissions) {
-        listView = findViewById(R.id.list_view);
+//        listView = findViewById(R.id.list_view);
         initDatas(hasGetPermissions);
         DeviceInfoAdapter adapter = new DeviceInfoAdapter(this, R.layout.device_info_item_list, deviceInfo);
         listView.setAdapter(adapter);
@@ -122,7 +147,7 @@ public class DeviceInfoActivity extends BaseActivity {
                 TextView tv_title = ll_device_info.findViewById(R.id.tv_title);
                 TextView tv_content = ll_device_info.findViewById(R.id.tv_content);
                 String copy_content = tv_title.getText() + ":" + tv_content.getText();
-                DeviceUtil.copyToClipboard(ll_main,copy_content);
+                DeviceUtil.copyToClipboard(getActionBarView(getParent()), copy_content);
             }
         });
     }
@@ -136,7 +161,6 @@ public class DeviceInfoActivity extends BaseActivity {
         deviceInfo.add(new DeviceInfo("设备型号", DeviceUtil.getPhoneModel()));
         deviceInfo.add(new DeviceInfo("ROM版本", DeviceUtil.getRomVersion()));
         deviceInfo.add(new DeviceInfo("屏幕信息", DeviceUtil.getScreenInfo(this)));
-        deviceInfo.add(new DeviceInfo("硬件名称", DeviceUtil.getHardware()));
         if (hasGetPermissions) {
             deviceInfo.add(new DeviceInfo("IMEI", imei_imsi[0]));
             deviceInfo.add(new DeviceInfo("IMSI", imei_imsi[1]));
@@ -168,8 +192,6 @@ public class DeviceInfoActivity extends BaseActivity {
             Intent intent = new Intent(getApplicationContext(), AboutActivity.class);
             startActivity(intent);
             overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
-
-        }else if (item.getItemId() == R.id.change_theme) {
 
         }
 

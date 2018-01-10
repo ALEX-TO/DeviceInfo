@@ -5,7 +5,4 @@
     <item
         android:id="@+id/action_about"
         android:title="关于" />
-    <item
-        android:id="@+id/change_theme"
-        android:title="更改主题" />
 </menu>
