@@ -65,12 +65,7 @@ public class DeviceInfoActivity extends BaseActivity {
 //        ll_main = findViewById(R.id.ll_main);
 //        listView = findViewById(R.id.list_view);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            permission();
-        } else {
-            getNeedPermissionInfo();
-        }
-
+        permission();
 
     }
 
@@ -83,7 +78,7 @@ public class DeviceInfoActivity extends BaseActivity {
 
         phone_number = DeviceUtil.getPhoneNumber(getApplicationContext());
 
-        networkOperatorName = DeviceUtil.getSimOperatorName(getApplicationContext());
+        networkOperatorName = DeviceUtil.getNetworkOperatorName(getApplicationContext());
 
         setUpListView(true);
 
@@ -114,7 +109,7 @@ public class DeviceInfoActivity extends BaseActivity {
 
             @Override
             public void onDenied(List<String> deniedPermission) {
-                for(String permission : deniedPermission){
+                for(final String permission : deniedPermission){
 
                     if(!ActivityCompat.shouldShowRequestPermissionRationale(DeviceInfoActivity.this, permission)){
                         //当拒绝了授权后，为提升用户体验，可以以弹窗的方式引导用户到设置中去进行设置
@@ -132,7 +127,12 @@ public class DeviceInfoActivity extends BaseActivity {
 
                                     }
                                 })
-                                .setNegativeButton("取消", null)
+                                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        SnackBarUtils.showTopSnackBar(getWindow().getDecorView(), "被拒绝的权限：" + DeviceUtil.getPermissionContent(permission), DeviceUtil.getTSnackbarHeight(getApplicationContext()), 2);
+                                    }
+                                })
                                 .show();
                     }else {
 //                    Toast.makeText(DeviceInfoActivity.this, "被拒绝的权限：" + DeviceUtil.getPermissionContent(permission), Toast.LENGTH_SHORT).show();
@@ -173,6 +173,7 @@ public class DeviceInfoActivity extends BaseActivity {
      * 初始化ListView数据
      */
     private void initDatas(boolean hasGetPermissions) {
+        boolean needScreenShot = false;
         deviceInfo.add(new DeviceInfo("系统版本", DeviceUtil.getOsVersion()));
         deviceInfo.add(new DeviceInfo("设备厂商", DeviceUtil.getPhoneBrand()));
         deviceInfo.add(new DeviceInfo("设备型号", DeviceUtil.getPhoneModel()));
@@ -181,7 +182,11 @@ public class DeviceInfoActivity extends BaseActivity {
         if (hasGetPermissions) {
             deviceInfo.add(new DeviceInfo("IMEI", imei_imsi[0]));
             deviceInfo.add(new DeviceInfo("IMSI", imei_imsi[1]));
-            deviceInfo.add(new DeviceInfo("手机号码", phone_number));
+            if (needScreenShot) {
+                deviceInfo.add(new DeviceInfo("手机号码", "+8618512345678"));
+            }else {
+                deviceInfo.add(new DeviceInfo("手机号码", phone_number));
+            }
             deviceInfo.add(new DeviceInfo("运营商名称", networkOperatorName));
         }else {
             deviceInfo.add(new DeviceInfo("IMEI", "未获取权限，无法读取！"));

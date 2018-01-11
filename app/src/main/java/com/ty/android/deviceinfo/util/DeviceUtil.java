@@ -118,15 +118,17 @@ public class DeviceUtil {
      * @param context
      * @return
      */
-    public static String getSimOperatorName(Context context) {
+    public static String getNetworkOperatorName(Context context) {
 
         String networkOperatorName;
 
         tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
-        networkOperatorName = tm.getSimOperatorName();
+        networkOperatorName = tm.getNetworkOperatorName();
 
-        if ("".equals(networkOperatorName) || networkOperatorName == null) {
+        LogUtil.log("网络运营商:" + networkOperatorName);
+
+        if ("".equals(networkOperatorName) || "null".equals(networkOperatorName)) {
             networkOperatorName = "未获取到运营商名称";
         }
 

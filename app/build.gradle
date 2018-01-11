@@ -6,8 +6,8 @@ android {
         applicationId "com.ty.android.deviceinfo"
         minSdkVersion 17
         targetSdkVersion 26
-        versionCode 4
-        versionName "1.0.4.171220_RC"
+        versionCode 5
+        versionName "1.0.5.180111_RC"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
