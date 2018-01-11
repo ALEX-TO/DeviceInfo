@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -282,12 +283,12 @@ public class DeviceUtil {
      * 复制到剪贴板
      * @param content
      */
-    public static void copyToClipboard(View view, String content) {
+    public static void copyToClipboard(View view, String content, int height) {
         ClipboardManager cm = (ClipboardManager) MyApplication.getAppContext().getSystemService(Context.CLIPBOARD_SERVICE);
         cm.setText(content);
 //        ToastUtil.show("“" + content + "”" + " 已复制");
 //        SnackBarUtils.showSnackBar(view, "“" + content + "”" + " 已复制");
-        SnackBarUtils.showTopSnackBar(view, "“" + content + "”" + " 已复制");
+        SnackBarUtils.showTopSnackBar(view, "“" + content + "”" + " 已复制", height, 1);
     }
 
     /**
@@ -311,13 +312,39 @@ public class DeviceUtil {
         return permissionContent;
     }
 
+    /**
+     * 获取TSnackbar高度
+     * @return
+     */
+    public static int getTSnackbarHeight(Context context) {
+        return (getStatusBarHeight(context) + getActionBarSize(context));
+    }
+
+    /**
+     * 获取状态栏高度
+     * @return
+     */
     public static int getStatusBarHeight(Context context) {
         int statusBarHeight = 0;
-        Resources res = context.getResources();
-        int resourceId = res.getIdentifier("status_bar_height", "dimen", "android");
+        int resourceId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
         if (resourceId > 0) {
-            statusBarHeight = res.getDimensionPixelSize(resourceId);
+            statusBarHeight = context.getResources().getDimensionPixelSize(resourceId);
         }
         return statusBarHeight;
+    }
+
+    /**
+     * 获取ActionBar的高度
+     * @param context
+     * @return
+     */
+    protected static int getActionBarSize(Context context) {
+        int[] attrs = { android.R.attr.actionBarSize };
+        TypedArray values = context.getTheme().obtainStyledAttributes(attrs);
+        try {
+            return values.getDimensionPixelSize(0, 0);//第一个参数数组索引，第二个参数 默认值
+        } finally {
+            values.recycle();
+        }
     }
 }

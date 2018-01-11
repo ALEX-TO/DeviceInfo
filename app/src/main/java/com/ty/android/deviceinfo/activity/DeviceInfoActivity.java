@@ -3,12 +3,19 @@ package com.ty.android.deviceinfo.activity;
 import android.Manifest;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.TypedArray;
+import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -56,24 +63,30 @@ public class DeviceInfoActivity extends BaseActivity {
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.colorPrimary), false);
 
 //        ll_main = findViewById(R.id.ll_main);
+//        listView = findViewById(R.id.list_view);
 
-        listView = findViewById(R.id.list_view);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            permission();
+        } else {
+            getNeedPermissionInfo();
+        }
 
-        permission();
 
     }
 
-    public static View getActionBarView(final Activity activity) {
-        if (activity instanceof IToolbarHolder)
-            return ((IToolbarHolder) activity).getToolbar();
-        final String packageName = activity instanceof DeviceInfoActivity ? activity.getPackageName() : "android";
-        final int resId = activity.getResources().getIdentifier("action_bar_container", "id", packageName);
-        final View view = activity.findViewById(resId);
-        return view;
-    }
+    /**
+     * 获取需要权限的信息
+     */
+    public void getNeedPermissionInfo() {
 
-    public interface IToolbarHolder {
-        public android.support.v7.widget.Toolbar getToolbar();
+        imei_imsi = DeviceUtil.getImeiAndImsi(getApplicationContext());
+
+        phone_number = DeviceUtil.getPhoneNumber(getApplicationContext());
+
+        networkOperatorName = DeviceUtil.getSimOperatorName(getApplicationContext());
+
+        setUpListView(true);
+
     }
 
     /**
@@ -83,16 +96,20 @@ public class DeviceInfoActivity extends BaseActivity {
         requestRunPermisssion(new String[]{Manifest.permission.READ_PHONE_STATE}, new PermissionListener() {
             @Override
             public void onGranted() {
+
                 //所有权限都授权了
-                ToastUtil.show("所有权限都已授权！");
+                SnackBarUtils.showTopSnackBar(getWindow().getDecorView(), "所有权限都已授权！", DeviceUtil.getTSnackbarHeight(getApplicationContext()), 0);
+//                ToastUtil.show("所有权限都已授权！");
 //                SnackBarUtils.showTopSnackBar(ll_main, "所有权限都已授权！");
-                imei_imsi = DeviceUtil.getImeiAndImsi(getApplicationContext());
 
-                phone_number = DeviceUtil.getPhoneNumber(getApplicationContext());
-
-                networkOperatorName = DeviceUtil.getSimOperatorName(getApplicationContext());
-
-                setUpListView(true);
+                getNeedPermissionInfo();
+//                imei_imsi = DeviceUtil.getImeiAndImsi(getApplicationContext());
+//
+//                phone_number = DeviceUtil.getPhoneNumber(getApplicationContext());
+//
+//                networkOperatorName = DeviceUtil.getSimOperatorName(getApplicationContext());
+//
+//                setUpListView(true);
             }
 
             @Override
@@ -119,7 +136,7 @@ public class DeviceInfoActivity extends BaseActivity {
                                 .show();
                     }else {
 //                    Toast.makeText(DeviceInfoActivity.this, "被拒绝的权限：" + DeviceUtil.getPermissionContent(permission), Toast.LENGTH_SHORT).show();
-                        SnackBarUtils.showTopSnackBar(getActionBarView(getParent()), "被拒绝的权限：" + DeviceUtil.getPermissionContent(permission));
+                        SnackBarUtils.showTopSnackBar(getWindow().getDecorView(), "被拒绝的权限：" + DeviceUtil.getPermissionContent(permission), DeviceUtil.getTSnackbarHeight(getApplicationContext()), 2);
                     }
                 }
 
@@ -132,7 +149,7 @@ public class DeviceInfoActivity extends BaseActivity {
      * 加载ListView
      */
     public void setUpListView(boolean hasGetPermissions) {
-//        listView = findViewById(R.id.list_view);
+        listView = findViewById(R.id.list_view);
         initDatas(hasGetPermissions);
         DeviceInfoAdapter adapter = new DeviceInfoAdapter(this, R.layout.device_info_item_list, deviceInfo);
         listView.setAdapter(adapter);
@@ -147,7 +164,7 @@ public class DeviceInfoActivity extends BaseActivity {
                 TextView tv_title = ll_device_info.findViewById(R.id.tv_title);
                 TextView tv_content = ll_device_info.findViewById(R.id.tv_content);
                 String copy_content = tv_title.getText() + ":" + tv_content.getText();
-                DeviceUtil.copyToClipboard(getActionBarView(getParent()), copy_content);
+                DeviceUtil.copyToClipboard(getWindow().getDecorView(), copy_content, DeviceUtil.getTSnackbarHeight(getApplicationContext()));
             }
         });
     }
