@@ -1,30 +1,17 @@
 package com.ty.android.deviceinfo.activity;
 
 import android.Manifest;
-import android.app.ActionBar;
-import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.TypedArray;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -35,9 +22,7 @@ import com.ty.android.deviceinfo.adapter.DeviceInfoAdapter;
 import com.ty.android.deviceinfo.PermissionListener;
 import com.ty.android.deviceinfo.R;
 import com.ty.android.deviceinfo.util.DeviceUtil;
-import com.ty.android.deviceinfo.util.LogUtil;
 import com.ty.android.deviceinfo.util.SnackBarUtils;
-import com.ty.android.deviceinfo.util.ToastUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,16 +39,18 @@ public class DeviceInfoActivity extends BaseActivity {
 
     private List<DeviceInfo> deviceInfo = new ArrayList<>();
 
-//    private LinearLayout ll_main;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_device_info);
 
-        StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.colorPrimary), false);
-
-//        ll_main = findViewById(R.id.ll_main);
-//        listView = findViewById(R.id.list_view);
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+            setContentView(R.layout.activity_device_info2);
+            StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.colorPrimary), false);
+            listView = findViewById(R.id.list_view_in_coordinatorLayout);
+        } else {
+            setContentView(R.layout.activity_device_info);
+            listView = findViewById(R.id.list_view_in_linearLayout);
+        }
 
         permission();
 
@@ -93,7 +80,7 @@ public class DeviceInfoActivity extends BaseActivity {
             public void onGranted() {
 
                 //所有权限都授权了
-                SnackBarUtils.showTopSnackBar(getWindow().getDecorView(), "所有权限都已授权！", DeviceUtil.getTSnackbarHeight(getApplicationContext()), 0);
+                SnackBarUtils.showTopSnackBar(listView, "所有权限都已授权！", DeviceUtil.getTSnackbarHeight(getApplicationContext()), 0);
 //                ToastUtil.show("所有权限都已授权！");
 //                SnackBarUtils.showTopSnackBar(ll_main, "所有权限都已授权！");
 
@@ -136,7 +123,7 @@ public class DeviceInfoActivity extends BaseActivity {
                                 .show();
                     }else {
 //                    Toast.makeText(DeviceInfoActivity.this, "被拒绝的权限：" + DeviceUtil.getPermissionContent(permission), Toast.LENGTH_SHORT).show();
-                        SnackBarUtils.showTopSnackBar(getWindow().getDecorView(), "被拒绝的权限：" + DeviceUtil.getPermissionContent(permission), DeviceUtil.getTSnackbarHeight(getApplicationContext()), 2);
+                        SnackBarUtils.showTopSnackBar(listView, "被拒绝的权限：" + DeviceUtil.getPermissionContent(permission), DeviceUtil.getTSnackbarHeight(getApplicationContext()), 2);
                     }
                 }
 
@@ -149,7 +136,7 @@ public class DeviceInfoActivity extends BaseActivity {
      * 加载ListView
      */
     public void setUpListView(boolean hasGetPermissions) {
-        listView = findViewById(R.id.list_view);
+//        listView = findViewById(R.id.list_view);
         initDatas(hasGetPermissions);
         DeviceInfoAdapter adapter = new DeviceInfoAdapter(this, R.layout.device_info_item_list, deviceInfo);
         listView.setAdapter(adapter);
@@ -164,7 +151,8 @@ public class DeviceInfoActivity extends BaseActivity {
                 TextView tv_title = ll_device_info.findViewById(R.id.tv_title);
                 TextView tv_content = ll_device_info.findViewById(R.id.tv_content);
                 String copy_content = tv_title.getText() + ":" + tv_content.getText();
-                DeviceUtil.copyToClipboard(getWindow().getDecorView(), copy_content, DeviceUtil.getTSnackbarHeight(getApplicationContext()));
+//                DeviceUtil.copyToClipboard(getWindow().getDecorView(), copy_content, DeviceUtil.getTSnackbarHeight(getApplicationContext()));
+                DeviceUtil.copyToClipboard(listView, copy_content, DeviceUtil.getTSnackbarHeight(getApplicationContext()));
             }
         });
     }
