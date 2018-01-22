@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimary</item>
@@ -10,4 +10,23 @@
 
     <style name="NoActionBarTheme" parent="Theme.AppCompat.Light.NoActionBar">
     </style>
+
+    <!-- 状态栏字体大小和颜色 -->
+    <style name="Toolbar.TitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="colorControlNormal">@color/white</item>
+        <item name="android:textSize">20dp</item>
+    </style>
+
+    <!-- toolbar菜单样式 -->
+    <style name="ToolbarTheme" parent="@style/ThemeOverlay.AppCompat.ActionBar">
+        <item name="colorControlNormal">@color/white</item>
+        <!--<item name="actionMenuTextColor">@color/white</item>-->
+    </style>
+
+    <!-- toolbar弹出菜单样式 -->
+    <style name="ToolbarPopupTheme" parent="@style/ThemeOverlay.AppCompat">
+        <item name="android:textColor">@color/colorAppName</item>
+        <!--<item name="android:colorBackground">@color/colorAppName</item>-->
+    </style>
+
 </resources>

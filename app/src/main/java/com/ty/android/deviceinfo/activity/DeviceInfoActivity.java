@@ -5,9 +5,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.support.v7.widget.Toolbar;
 
 import com.githang.statusbar.StatusBarCompat;
 import com.ty.android.deviceinfo.entity.DeviceInfo;
@@ -22,6 +25,7 @@ import com.ty.android.deviceinfo.adapter.DeviceInfoAdapter;
 import com.ty.android.deviceinfo.PermissionListener;
 import com.ty.android.deviceinfo.R;
 import com.ty.android.deviceinfo.util.DeviceUtil;
+import com.ty.android.deviceinfo.util.LogUtil;
 import com.ty.android.deviceinfo.util.SnackBarUtils;
 
 import java.util.ArrayList;
@@ -39,18 +43,30 @@ public class DeviceInfoActivity extends BaseActivity {
 
     private List<DeviceInfo> deviceInfo = new ArrayList<>();
 
+    private Toolbar toolbar;
+
+    private CoordinatorLayout top_snackbar_container;
+
+    private long mExitTime;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_device_info);
 
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-            setContentView(R.layout.activity_device_info2);
             StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.colorPrimary), false);
-            listView = findViewById(R.id.list_view_in_coordinatorLayout);
-        } else {
-            setContentView(R.layout.activity_device_info);
-            listView = findViewById(R.id.list_view_in_linearLayout);
         }
+
+        top_snackbar_container = findViewById(R.id.top_snackbar_container);
+        listView = findViewById(R.id.list_view_in_linearLayout);
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        LogUtil.log("SerialNumber>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + DeviceUtil.getSerialNumber());
+        LogUtil.log("ApiLevel>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + DeviceUtil.getApiLevel());
+        LogUtil.log("BuildTime>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + DeviceUtil.getBuildTime());
+        LogUtil.log("CPUCores>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + DeviceUtil.getNumberOfCPUCores());
 
         permission();
 
@@ -80,7 +96,7 @@ public class DeviceInfoActivity extends BaseActivity {
             public void onGranted() {
 
                 //所有权限都授权了
-                SnackBarUtils.showTopSnackBar(listView, "所有权限都已授权！", DeviceUtil.getTSnackbarHeight(getApplicationContext()), 0);
+                SnackBarUtils.showTopSnackBar(top_snackbar_container, "所有权限都已授权！", DeviceUtil.getTSnackbarHeight(getApplicationContext()), 0);
 //                ToastUtil.show("所有权限都已授权！");
 //                SnackBarUtils.showTopSnackBar(ll_main, "所有权限都已授权！");
 
@@ -123,7 +139,7 @@ public class DeviceInfoActivity extends BaseActivity {
                                 .show();
                     }else {
 //                    Toast.makeText(DeviceInfoActivity.this, "被拒绝的权限：" + DeviceUtil.getPermissionContent(permission), Toast.LENGTH_SHORT).show();
-                        SnackBarUtils.showTopSnackBar(listView, "被拒绝的权限：" + DeviceUtil.getPermissionContent(permission), DeviceUtil.getTSnackbarHeight(getApplicationContext()), 2);
+                        SnackBarUtils.showTopSnackBar(top_snackbar_container, "被拒绝的权限：" + DeviceUtil.getPermissionContent(permission), DeviceUtil.getTSnackbarHeight(getApplicationContext()), 2);
                     }
                 }
 
@@ -152,7 +168,7 @@ public class DeviceInfoActivity extends BaseActivity {
                 TextView tv_content = ll_device_info.findViewById(R.id.tv_content);
                 String copy_content = tv_title.getText() + ":" + tv_content.getText();
 //                DeviceUtil.copyToClipboard(getWindow().getDecorView(), copy_content, DeviceUtil.getTSnackbarHeight(getApplicationContext()));
-                DeviceUtil.copyToClipboard(listView, copy_content, DeviceUtil.getTSnackbarHeight(getApplicationContext()));
+                DeviceUtil.copyToClipboard(top_snackbar_container, copy_content, DeviceUtil.getTSnackbarHeight(getApplicationContext()));
             }
         });
     }
@@ -163,9 +179,11 @@ public class DeviceInfoActivity extends BaseActivity {
     private void initDatas(boolean hasGetPermissions) {
         boolean needScreenShot = false;
         deviceInfo.add(new DeviceInfo("系统版本", DeviceUtil.getOsVersion()));
+//        deviceInfo.add(new DeviceInfo("API级别", DeviceUtil.getApiLevel()));
         deviceInfo.add(new DeviceInfo("设备厂商", DeviceUtil.getPhoneBrand()));
         deviceInfo.add(new DeviceInfo("设备型号", DeviceUtil.getPhoneModel()));
         deviceInfo.add(new DeviceInfo("ROM版本", DeviceUtil.getRomVersion()));
+//        deviceInfo.add(new DeviceInfo("序列号", DeviceUtil.getSerialNumber()));
         deviceInfo.add(new DeviceInfo("屏幕信息", DeviceUtil.getScreenInfo(this)));
         if (hasGetPermissions) {
             deviceInfo.add(new DeviceInfo("IMEI", imei_imsi[0]));
@@ -187,6 +205,48 @@ public class DeviceInfoActivity extends BaseActivity {
         deviceInfo.add(new DeviceInfo("总内存", DeviceUtil.getTotalMemory()));
         deviceInfo.add(new DeviceInfo("剩余内存", DeviceUtil.getFreeMemory(getApplicationContext())));
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        //1.点击的时间差如果大于2000，则提示用户点击两次退出
+        if(System.currentTimeMillis() - mExitTime > 2000) {
+
+            //2.保存当前时间
+            mExitTime  = System.currentTimeMillis();
+
+            //3.提示
+//            SnackBarUtils.showTopSnackBar(top_snackbar_container, "再次点击返回键退出应用！", DeviceUtil.getTSnackbarHeight(getApplicationContext()), 3);
+        } else {
+            //4.点击的时间差小于2000，调用父类onBackPressed方法执行退出。
+            super.onBackPressed();
+        }
+
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        //1.点击返回键条件成立
+        if(keyCode == KeyEvent.KEYCODE_BACK
+                && event.getAction() == KeyEvent.ACTION_DOWN
+                && event.getRepeatCount() == 0) {
+
+            //2.点击的时间差如果大于2000，则提示用户点击两次退出
+            if(System.currentTimeMillis() - mExitTime > 2000) {
+
+                //3.保存当前时间
+                mExitTime  = System.currentTimeMillis();
+
+                //4.提示
+                SnackBarUtils.showTopSnackBar(top_snackbar_container, "再次点击返回键退出应用！", DeviceUtil.getTSnackbarHeight(getApplicationContext()), 3);
+            } else {
+                //5.点击的时间差小于2000，退出。
+                super.finish();
+//                System.exit(0);
+            }
+
+        }
+        return true;
     }
 
     @Override

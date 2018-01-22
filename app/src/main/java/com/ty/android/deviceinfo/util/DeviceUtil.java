@@ -20,7 +20,10 @@ import android.view.View;
 import com.ty.android.deviceinfo.MyApplication;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
 import java.io.FileReader;
+import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 
 public class DeviceUtil {
@@ -319,7 +322,7 @@ public class DeviceUtil {
      * @return
      */
     public static int getTSnackbarHeight(Context context) {
-        return (getStatusBarHeight(context) + getActionBarSize(context));
+        return (getActionBarSize(context));
     }
 
     /**
@@ -348,5 +351,78 @@ public class DeviceUtil {
         } finally {
             values.recycle();
         }
+    }
+
+    /**
+     * 获取cpu核数
+     * @return
+     */
+    public static String getNumberOfCPUCores() {
+
+        int cores;
+
+        String coresStr = "未知";
+
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
+            // Gingerbread doesn't support giving a single application access to both cores, but a
+            // handful of devices (Atrix 4G and Droid X2 for example) were released with a dual-core
+            // chipset and Gingerbread; that can let an app in the background run without impacting
+            // the foreground application. But for our purposes, it makes them single core.
+            return "1";
+        }
+
+        try {
+            cores = new File("/sys/devices/system/cpu/").listFiles(CPU_FILTER).length;
+            coresStr = String.valueOf(cores);
+        } catch (Exception e) {
+        }
+
+        return coresStr;
+    }
+
+    /**
+     * 获取CPU_FILTER
+     */
+    private static final FileFilter CPU_FILTER = new FileFilter() {
+        @Override
+        public boolean accept(File pathname) {
+            String path = pathname.getName();
+            //regex is slow, so checking char by char.
+            if (path.startsWith("cpu")) {
+                for (int i = 3; i < path.length(); i++) {
+                    if (path.charAt(i) < '0' || path.charAt(i) > '9') {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+    };
+
+    /**
+     * 获取设备序列号
+     * @return
+     */
+    public static String getSerialNumber(){
+        return Build.SERIAL;
+    }
+
+    /**
+     * 获取Api级别
+     * @return
+     */
+    public static String getApiLevel(){
+        return String.valueOf(Build.VERSION.SDK_INT);
+    }
+
+    /**
+     * 获取Build时间
+     * @return
+     */
+    public static String getBuildTime(){
+        Long buildTime = Build.TIME;
+        String date = new java.text.SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss").format(new java.util.Date(buildTime));
+        return date;
     }
 }
